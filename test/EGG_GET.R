@@ -7,7 +7,7 @@ load("egg_get.rda")
 
 save.image("egg_get.rda")
 
-
+setwd("C:\\Users\\Christy\\Dropbox\\Consulting\\EGG Abell")
 
 data <- read.csv("Mississippi_GET.csv", header = TRUE)
 
