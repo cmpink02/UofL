@@ -196,6 +196,11 @@ sum(is.na(data$cutamp))
 sum(is.na(x))
 sum(is.na(y))
 
+####
+### Tables
+####
+notna <- which(y!=is.na(y))
+q1 <- which(data$cut.far<=31.300)
 
 ####################################################################
 ## 11/18/2014
