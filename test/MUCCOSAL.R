@@ -28,12 +28,20 @@ data$muc5far <- data$muc5freq/data$muc5amp
 ####################################################################
 beta1 <- function (x, y, n, sub){
   beta.obs.boot <- numeric(n)
+  data<-cbind(x, y)
+  data1 <- data[which(!is.na(data[,1]) & !is.na(data[,2])), ]
+  x<-data1[,1]
+  y<-data1[,2]
   for(i in 1:n) {
-    beta.obs.boot[i] <- coef(lm(sample(y, length(y)) ~ x))[2]
+    v<-sample(y, length(y))
+    beta.obs.boot[i] <- coef(lm(v - x ~ x))[2]
+    #basechgplt(x, v-x, "Baseline EGG Frequency")
+    #abline(a=coef(lm(v-x ~ x))[1], b=beta.obs.boot[i], col=cols[4], lwd = 2)
   }
-  summary(beta.obs.boot)
+
   plot(density(beta.obs.boot), lwd=3, col="steelblue",
-       main=c("Re-sampling betas. True beta is: ", round(coef(lm(y ~ x))[2], 2)), sub=sub)
+       main=c("Permutation betas. Beta observed: ", round(coef(lm(y-x ~ x))[2], 2)), sub=sub)
+  abline(v=coef(lm(y-x ~ x))[2], lwd=3, col='gold')
 }
 
 
@@ -45,31 +53,28 @@ beta2 <- function (x, y, n, sub) {
   for(i in 1:n) {
     beta.resid.boot[i] <- coef(lm(
       ibm.fit + ibm.resid[sample(y, length(y))] ~ x))[2]
+
   }
   plot(density(beta.resid.boot), lwd=3, col="steelblue",
        main=c("Re-sampling beta residuals for amplitude. True beta is: ", round(coef(lm(y ~ x))[2], 2)), sub=sub)
+  x1<-data$c
 } 
 
 
 set.seed(1321654)
 n<-1000
 
+
 ###### BASELINE and 5-day
 # Frequency 
-beta1(data$cutfreq, with(data, cut5freq - cutfreq), n, "Cutaneous EGG Frequency")
-beta2(data$cutfreq, with(data, cut5freq - cutfreq), n, "Cutaneous EGG Frequency")
-beta1(data$mucfreq, with(data, muc5freq - mucfreq), n, "Mucosal EGG Frequency")
-beta2(data$mucfreq, with(data, muc5freq - mucfreq), n, "Mucosal EGG Frequency")
+beta1(data$cutfreq, data$cut5freq, n, "Cutaneous EGG Frequency")
+beta1(data$mucfreq, data$muc5freq, n, "Mucosal EGG Frequency")
 # Amplitude
-beta1(data$cutamp, with(data, cut5amp - cutamp), n, "Cutaneous EGG Amplitude")
-beta2(data$cutamp, with(data, cut5amp - cutamp), n, "Cutaneous EGG Amplitude")
-beta1(data$mucamp, with(data, muc5amp - mucamp), n, "Mucosal EGG Amplitude")
-beta2(data$mucamp, with(data, muc5amp - mucamp), n, "Mucosal EGG Amplitude")
+beta1(data$cutamp, data$cut5amp, n, "Cutaneous EGG Amplitude")
+beta1(data$mucamp, data$muc5amp, n, "Mucosal EGG Amplitude")
 # FAR
-beta1(data$cut.far, with(data, cut5far - cut.far), n, "Cutaneous EGG FAR")
-beta2(data$cut.far, with(data, cut5far - cut.far), n, "Cutaneous EGG FAR")
-beta1(data$mucfar, with(data, muc5far - mucfar), n, "Mucosal EGG FAR")
-beta2(data$mucfar, with(data, muc5far - mucfar), n, "Mucosal EGG FAR")
+beta1(data$cut.far, data$cut5far, n, "Cutaneous EGG FAR")
+beta1(data$mucfar, data$muc5far, n, "Mucosal EGG FAR")
 
 
 ####################################################################
@@ -87,6 +92,10 @@ cor.test(data$cut5freq, data$muc5freq, use="complete")
 cor.test(data$cut5amp, data$muc5amp, use="complete")
 cor.test(data$cut5far, data$muc5far, use="complete")
 
+###### Change from baseline
+cor.test(data$cut5freq-data$cutfreq, data$muc5freq-data$mucfreq, use="complete")
+cor.test(data$cut5amp-data$cutamp, data$muc5amp-data$mucamp, use="complete")
+cor.test(data$cut5far-data$cut.far, data$muc5far-data$mucfar, use="complete")
 
 ####################################################################
 ## Check to see if there is a correlation between the cutaneous data
@@ -132,7 +141,10 @@ basechgplt(data$mucfreq, with(data, muc5freq - mucfreq), "Baseline Mucosal Frequ
 basechgplt(data$mucamp, with(data, muc5amp - mucamp), "Baseline Mucosal Amplitude")
 basechgplt(data$mucfar, with(data, muc5far - mucfar), "Baseline Mucosal FAR")
 
-
+###### Correlation plots
+basechgplt(data$cut5freq-data$cutfreq, data$muc5freq-data$mucfreq, "Difference from Baseline - Cutaneous")
+basechgplt(data$cut5amp-data$cutamp, data$muc5amp-data$mucamp, "Difference from Baseline - Cutaneous")
+basechgplt(data$cut5far-data$cut.far, data$muc5far-data$mucfar, "Difference from Baseline - Cutaneous")
 
 
 
